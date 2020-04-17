@@ -60,11 +60,19 @@ def getPicture(target,headers):
     title=''
     req=requests.get(url=target,headers=headers)
 
-
+    print("Success open website")
 
     content=req.text
     soup = BeautifulSoup(content, 'lxml')
     title=getTitle(soup)
+
+    if(title=='Content Warning'):
+        path=target+"?nw=session"
+        req = requests.get(url=path, headers=headers)
+        content = req.text
+        soup = BeautifulSoup(content, 'lxml')
+        title = getTitle(soup)
+
     divs=soup.find_all(class_='gdtm')
     webPictureUrl=[]
     for div in divs:
@@ -101,10 +109,27 @@ if __name__=="__main__":
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
         'Upgrade-Insecure-Requests': '1'}
 
-    target='https://e-hentai.org/?page=3&f_cats=1021&f_search=tifa'
-    webUrl=getWebUrl(target,headers)
-    for url in webUrl:
-        getPicture(url, headers)
+    target = 'https://e-hentai.org/?page=1&f_cats=1021&f_search=tifa'
+    nextUrl = ""
+    while(True):
+        webUrl = getWebUrl(target, headers)
+        for url in webUrl:
+            getPicture(url, headers)
+        req = requests.get(url=target, headers=headers)
+        content = req.text
+        soup = BeautifulSoup(content, 'lxml')
+        urls = soup.find_all(onclick="document.location=this.firstChild.href")
+        for url in urls:
+            nextUrl = url.a.get('href')
+        if(nextUrl==target):
+            break
+        target=nextUrl
+
+
+
+
+
+
 
 
 
